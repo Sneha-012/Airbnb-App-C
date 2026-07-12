@@ -1,6 +1,8 @@
 package com.sneha.airbnbAppC.service;
 
+import com.sneha.airbnbAppC.dto.property.PropertyInfoDto;
 import com.sneha.airbnbAppC.dto.property.PropertyRequestDto;
+import com.sneha.airbnbAppC.dto.room.RoomResponseDto;
 import com.sneha.airbnbAppC.entity.Property;
 import com.sneha.airbnbAppC.dto.property.PropertyResponseDto;
 import com.sneha.airbnbAppC.entity.Room;
@@ -9,6 +11,7 @@ import com.sneha.airbnbAppC.repository.PropertyRepository;
 import com.sneha.airbnbAppC.repository.RoomRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.jspecify.annotations.Nullable;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -128,6 +131,24 @@ public class PropertyServiceImpl implements PropertyService {
             inventoryService.initializeRoomForAYear(room);
         }
 
+    }
+
+    @Override
+    public PropertyInfoDto getPropertyInfo(Long propertyId) {
+        log.debug("Fetch the property with id: {}", propertyId);
+        Property property = propertyRepository.findById(propertyId)
+                .orElseThrow(()-> {
+                    log.warn("Property not found with id: {}", propertyId);
+                    return new ResourceNotFoundException("Property not found with id: " + propertyId);
+                });
+
+        PropertyResponseDto propertyResponseDto = modelMapper.map(property,PropertyResponseDto.class);
+
+        List<RoomResponseDto> roomResponseDtoList = property.getRooms()
+                .stream().map(roomList ->modelMapper.map(roomList,RoomResponseDto.class))
+                .collect(Collectors.toList());
+
+        return new PropertyInfoDto(propertyResponseDto,roomResponseDtoList) ;
     }
 
 

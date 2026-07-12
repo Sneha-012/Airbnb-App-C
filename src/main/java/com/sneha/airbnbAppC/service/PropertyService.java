@@ -1,7 +1,9 @@
 package com.sneha.airbnbAppC.service;
 
+import com.sneha.airbnbAppC.dto.property.PropertyInfoDto;
 import com.sneha.airbnbAppC.dto.property.PropertyRequestDto;
 import com.sneha.airbnbAppC.dto.property.PropertyResponseDto;
+import org.jspecify.annotations.Nullable;
 
 import java.util.List;
 
@@ -19,4 +21,5 @@ public interface PropertyService {
 
     void activeProperty(Long id);
 
+    PropertyInfoDto getPropertyInfo(Long propertyId);
 }
