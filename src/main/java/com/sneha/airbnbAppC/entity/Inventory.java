@@ -41,13 +41,16 @@ public class Inventory {
     private Integer bookedCount;
 
     @Column(nullable = false, columnDefinition = "INTEGER DEFAULT 0")
+    private Integer reservedCount;
+
+    @Column(nullable = false, columnDefinition = "INTEGER DEFAULT 0")
     private Integer totalCount;
 
     @Column(nullable = false, precision = 5, scale = 2)
     private BigDecimal surgeFactor;
 
     @Column(nullable = false, precision =10, scale = 2)
-    private BigDecimal price; // base price * surge factor
+    private BigDecimal price;
 
     @Column(nullable = false)
     private String city;   //searched on based of city

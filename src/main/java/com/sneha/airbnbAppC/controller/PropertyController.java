@@ -63,5 +63,12 @@ public class PropertyController {
         return ResponseEntity.noContent().build();
     }
 
+    @PatchMapping("/{id}/deactivate")
+    public ResponseEntity<Void> deactivatePropertyById(@PathVariable Long id) {
+        log.info("Received request to deactivate property with id: {}", id);
+        propertyService.deactivateProperty(id);
+        return ResponseEntity.noContent().build();
+    }
+
 
 }

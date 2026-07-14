@@ -123,6 +123,12 @@ public class PropertyServiceImpl implements PropertyService {
                     log.warn("Cannot update — property not found with id: {}", id);
                     return new ResourceNotFoundException("Property not found with id: "+id);
                 });
+        // To check whether our property is already active or not
+        if (property.getActive()) {
+            log.warn("Property is already active, id: {}", id);
+            throw new IllegalStateException("Property is already active with id: " + id);
+        }
+
         property.setActive(true);
         propertyRepository.save(property);
 
@@ -130,8 +136,31 @@ public class PropertyServiceImpl implements PropertyService {
         for(Room room: property.getRooms()){
             inventoryService.initializeRoomForAYear(room);
         }
-
+        log.info("Property activated successfully with id: {}", id);
     }
+
+    @Override
+    @Transactional
+    public void deactivateProperty(Long id) {
+
+        log.info("Deactivating property with id: {}", id);
+
+        Property property = propertyRepository.findById(id)
+                .orElseThrow(() -> {
+                    log.warn("Cannot deactivate — property not found with id: {}", id);
+                    return new ResourceNotFoundException("Property not found with id: " + id);
+                });
+
+        property.setActive(false);
+        propertyRepository.save(property);
+
+        for (Room room : property.getRooms()) {
+            inventoryService.deleteFutureInventories(room);
+        }
+
+        log.info("Property deactivated successfully with id: {}", id);
+    }
+
 
     @Override
     public PropertyInfoDto getPropertyInfo(Long propertyId) {
@@ -150,6 +179,8 @@ public class PropertyServiceImpl implements PropertyService {
 
         return new PropertyInfoDto(propertyResponseDto,roomResponseDtoList) ;
     }
+
+
 
 
 }

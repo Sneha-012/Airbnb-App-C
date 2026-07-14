@@ -21,5 +21,7 @@ public interface PropertyService {
 
     void activeProperty(Long id);
 
+    void deactivateProperty(Long id);
+
     PropertyInfoDto getPropertyInfo(Long propertyId);
 }

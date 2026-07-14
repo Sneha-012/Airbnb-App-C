@@ -30,6 +30,9 @@ public class Payment {
     private PaymentStatus paymentStatus;
 
 
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "booking_id")
+    private Booking booking;
 
     @CreationTimestamp
     private LocalDateTime createdAt;
