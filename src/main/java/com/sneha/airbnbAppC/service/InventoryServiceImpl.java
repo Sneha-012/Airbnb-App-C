@@ -1,11 +1,13 @@
 package com.sneha.airbnbAppC.service;
 
+import com.sneha.airbnbAppC.dto.property.PropertyPriceDto;
 import com.sneha.airbnbAppC.dto.property.PropertyResponseDto;
 import com.sneha.airbnbAppC.dto.property.PropertySearchRequestDto;
 import com.sneha.airbnbAppC.entity.Inventory;
 import com.sneha.airbnbAppC.entity.Property;
 import com.sneha.airbnbAppC.entity.Room;
 import com.sneha.airbnbAppC.repository.InventoryRepository;
+import com.sneha.airbnbAppC.repository.PropertyMinPriceRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
@@ -26,6 +28,7 @@ public class InventoryServiceImpl implements InventoryService{
 
     private final InventoryRepository inventoryRepository;
     private final ModelMapper modelMapper;
+    private final PropertyMinPriceRepository propertyMinPriceRepository;
 
     @Override
     @Transactional
@@ -72,15 +75,28 @@ public class InventoryServiceImpl implements InventoryService{
     public Page<PropertyResponseDto> searchProperties(PropertySearchRequestDto propertySearchRequestDto) {
         Pageable pageable = PageRequest.of(propertySearchRequestDto.getPage(), propertySearchRequestDto.getSize());
 
-        long dateCount = ChronoUnit.DAYS.between(propertySearchRequestDto.getCheckInDate(),propertySearchRequestDto.getCheckOutDate());
+        long dateCount = ChronoUnit.DAYS.between(propertySearchRequestDto.getCheckInDate(), propertySearchRequestDto.getCheckOutDate());
 
-        Page<Property> propertyPage = inventoryRepository.findPropertyWithAvailableInventory(propertySearchRequestDto.getCity(),
-                propertySearchRequestDto.getCheckInDate(),propertySearchRequestDto.getCheckOutDate(),
-                propertySearchRequestDto.getRoomsCount(),dateCount,pageable);
+        //business logic for 90 days
+        Page<PropertyPriceDto> propertyPage =
+                propertyMinPriceRepository.findPropertyWithAvailableInventory(propertySearchRequestDto.getCity(),
+                        propertySearchRequestDto.getCheckInDate(), propertySearchRequestDto.getCheckOutDate(),
+                        propertySearchRequestDto.getRoomsCount(), dateCount, pageable);
 
+        // Convert every PropertyPriceDto in the page into a PropertyResponseDto
+        return propertyPage.map((element) -> mapToPropertyResponseDto(element));
+    }
 
+    // Takes one "property + price" bundle, and turns it into the final API response shape
+    private PropertyResponseDto mapToPropertyResponseDto(PropertyPriceDto propertyPriceDto) {
 
-        return propertyPage.map((element)->modelMapper.map((element),PropertyResponseDto.class));
-        //This says: "for every Property inside this page, convert just that one object into a PropertyResponseDto, and give me back a Page<PropertyResponseDto> with the same pagination shape."
+        // Auto-copy matching fields (name, city, amenities, etc.) from Property into PropertyResponseDto
+        PropertyResponseDto dto = modelMapper.map(propertyPriceDto.getProperty(), PropertyResponseDto.class);
+
+        // Property has no price field, so ModelMapper can't fill this in automatically —
+        // manually attach the cheapest price we calculated in the search query
+        dto.setPrice(propertyPriceDto.getPrice());
+
+        return dto; // now dto has both property details AND the price
     }
 }

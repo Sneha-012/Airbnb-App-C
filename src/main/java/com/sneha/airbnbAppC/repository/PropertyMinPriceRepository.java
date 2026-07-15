@@ -23,7 +23,7 @@ public interface PropertyMinPriceRepository extends JpaRepository<PropertyMinPri
             GROUP BY i.property
             HAVING COUNT(i.date) = :dateCount
             """)
-    Page<PropertyPriceDto> findHotelsWithAvailableInventory(
+    Page<PropertyPriceDto> findPropertyWithAvailableInventory(
             @Param("city") String city,
             @Param("checkInDate") LocalDate checkInDate,
             @Param("checkOutDate") LocalDate checkOutDate,
