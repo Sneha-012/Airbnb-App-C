@@ -2,11 +2,9 @@ package com.sneha.airbnbAppC.pricingStrategy;
 
 import com.sneha.airbnbAppC.entity.Inventory;
 import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
-
 import java.math.BigDecimal;
 
-@Service
+
 @RequiredArgsConstructor
 public class SurgePriceStrategy implements PricingStrategy{
 

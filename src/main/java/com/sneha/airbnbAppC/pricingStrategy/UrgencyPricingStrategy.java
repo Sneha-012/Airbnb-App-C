@@ -2,13 +2,9 @@ package com.sneha.airbnbAppC.pricingStrategy;
 
 import com.sneha.airbnbAppC.entity.Inventory;
 import lombok.RequiredArgsConstructor;
-import lombok.Setter;
-import org.springframework.stereotype.Service;
-
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
-@Service
 @RequiredArgsConstructor
 public class UrgencyPricingStrategy implements PricingStrategy{
 

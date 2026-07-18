@@ -2,7 +2,6 @@ package com.sneha.airbnbAppC.pricingStrategy;
 
 import com.sneha.airbnbAppC.entity.Inventory;
 import org.springframework.stereotype.Service;
-
 import java.math.BigDecimal;
 
 @Service
