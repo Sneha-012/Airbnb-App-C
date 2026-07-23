@@ -5,6 +5,7 @@ import com.sneha.airbnbAppC.entity.User;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import javax.crypto.SecretKey;
@@ -14,6 +15,7 @@ import java.util.Date;
 @Service
 public class JWTService {
 
+    @Value("${jwt.secretKey}")
     private String jwtSecretKey;
 
     private static final long ACCESS_TOKEN_EXPIRY_MS = 1000L * 60 * 10;              // 10 minutes
