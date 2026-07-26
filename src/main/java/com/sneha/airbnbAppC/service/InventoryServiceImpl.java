@@ -1,25 +1,34 @@
 package com.sneha.airbnbAppC.service;
 
+import com.sneha.airbnbAppC.dto.inventory.InventoryResponseDto;
 import com.sneha.airbnbAppC.dto.property.PropertyPriceDto;
 import com.sneha.airbnbAppC.dto.property.PropertyResponseDto;
 import com.sneha.airbnbAppC.dto.property.PropertySearchRequestDto;
 import com.sneha.airbnbAppC.entity.Inventory;
 import com.sneha.airbnbAppC.entity.Property;
 import com.sneha.airbnbAppC.entity.Room;
+import com.sneha.airbnbAppC.entity.User;
+import com.sneha.airbnbAppC.exception.ResourceNotFoundException;
 import com.sneha.airbnbAppC.repository.InventoryRepository;
 import com.sneha.airbnbAppC.repository.PropertyMinPriceRepository;
+import com.sneha.airbnbAppC.repository.RoomRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
+import java.util.List;
+import java.util.stream.Collectors;
+
+import static com.sneha.airbnbAppC.util.AppUtils.getCurrentUser;
 
 @Service
 @Slf4j
@@ -29,6 +38,7 @@ public class InventoryServiceImpl implements InventoryService{
     private final InventoryRepository inventoryRepository;
     private final ModelMapper modelMapper;
     private final PropertyMinPriceRepository propertyMinPriceRepository;
+    private final RoomRepository roomRepository;
 
     @Override
     @Transactional
@@ -85,6 +95,26 @@ public class InventoryServiceImpl implements InventoryService{
 
         // Convert every PropertyPriceDto in the page into a PropertyResponseDto
         return propertyPage.map((element) -> mapToPropertyResponseDto(element));
+    }
+
+    @Override
+    public List<InventoryResponseDto> getAllInventoryByRoomId(Long roomId) {
+
+
+        Room room = roomRepository.findById(roomId)
+                .orElseThrow(()->{
+                    log.warn("Cannot fetch inventory - Room doesnot exists by Id: {}",roomId);
+                    return new ResourceNotFoundException("Room doesnot exists by Id: "+ roomId);
+                });
+        User user = getCurrentUser();
+        if(!user.equals(room.getProperty().getOwner()))
+            throw new AccessDeniedException("You are not the owner of room with id: "+roomId);
+
+        return inventoryRepository.findByRoomOrderByDate(room).stream()
+                .map((element) -> modelMapper.map(element,
+                        InventoryResponseDto.class))
+                .collect(Collectors.toList());
+
     }
 
     // Takes one "property + price" bundle, and turns it into the final API response shape

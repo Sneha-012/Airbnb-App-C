@@ -8,11 +8,13 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Lock;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 
 import java.time.LocalDate;
+import java.util.Arrays;
 import java.util.List;
 
 public interface InventoryRepository extends JpaRepository<Inventory, Long> {
@@ -61,5 +63,65 @@ public interface InventoryRepository extends JpaRepository<Inventory, Long> {
     );
 
 
+    @Query("""
+            SELECT i
+            FROM Inventory i
+            WHERE i.room.id = :roomId
+            AND i.date >= :checkInDate
+            AND i.date < :checkOutDate
+            AND i.closed = FALSE
+            AND (i.totalCount - i.bookedCount >= :roomsCount)
+            """)
+    // We only need this call for its locking side-effect (PESSIMISTIC_WRITE) —
+    // prevents concurrent modification of these inventory rows while we confirm the booking.
+    // The returned list itself isn't used here.
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    List<Inventory> findAndLockReservedInventory(
+            @Param("roomId") Long roomId,
+            @Param("checkInDate") LocalDate checkInDate,
+            @Param("checkOutDate") LocalDate checkOutDate,
+            @Param("roomsCount") Integer roomsCount
+    );
+
+    @Modifying
+    @Query("""
+            UPDATE Inventory i
+            SET i.reservedCount = i.reservedCount - :roomsCount,
+                i.bookedCount = i.bookedCount + :roomsCount
+            WHERE i.room.id = :roomId
+            AND i.date >= :checkInDate
+            AND i.date < :checkOutDate
+            AND i.closed = FALSE
+            AND (i.totalCount - i.bookedCount) >=:roomsCount
+            AND i.reservedCount >= :roomsCount
+            """)
+    void confirmBooking(
+            @Param("roomId") Long roomId,
+            @Param("checkInDate") LocalDate checkInDate,
+            @Param("checkOutDate") LocalDate checkOutDate,
+            @Param("roomsCount") Integer roomsCount
+    );
+
+    @Modifying
+    @Query("""
+            UPDATE Inventory i
+            SET i.bookedCount = i.bookedCount - :roomsCount
+            WHERE i.room.id = :roomId
+            AND i.date >= :checkInDate
+            AND i.date < :checkOutDate
+            AND i.closed = FALSE
+            AND (i.totalCount - i.bookedCount) >=:roomsCount
+            """)
+    void cancelBooking(
+            @Param("roomId") Long roomId,
+            @Param("checkInDate") LocalDate checkInDate,
+            @Param("checkOutDate") LocalDate checkOutDate,
+            @Param("roomsCount") Integer roomsCount
+    );
+
     List<Inventory> findByPropertyAndDateBetween(Property property, LocalDate startDate, LocalDate endDate);
+
+    List<Inventory> findByRoomOrderByDate(Room room);
+
+
 }
