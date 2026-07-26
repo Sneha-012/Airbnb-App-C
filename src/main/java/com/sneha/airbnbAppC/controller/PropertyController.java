@@ -1,7 +1,9 @@
 package com.sneha.airbnbAppC.controller;
 
+import com.sneha.airbnbAppC.dto.booking.BookingResponseDto;
 import com.sneha.airbnbAppC.dto.property.PropertyRequestDto;
 import com.sneha.airbnbAppC.dto.property.PropertyResponseDto;
+import com.sneha.airbnbAppC.service.BookingService;
 import com.sneha.airbnbAppC.service.PropertyService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -19,6 +21,7 @@ import java.util.List;
 public class PropertyController {
 
     private final PropertyService propertyService;
+    private final BookingService bookingService;
 
 
     @PostMapping
@@ -28,10 +31,10 @@ public class PropertyController {
         return ResponseEntity.status(HttpStatus.CREATED).body(propertyResponseDto);
     }
 
-    @GetMapping("/{id}")
-    public ResponseEntity<PropertyResponseDto> getPropertyById(@PathVariable Long id){
-        log.info("Received request to fetch property with id: {}", id);
-        PropertyResponseDto propertyResponseDto = propertyService.getPropertyById(id);
+    @GetMapping("/{propertyId}")
+    public ResponseEntity<PropertyResponseDto> getPropertyById(@PathVariable Long propertyId){
+        log.info("Received request to fetch property with id: {}", propertyId);
+        PropertyResponseDto propertyResponseDto = propertyService.getPropertyById(propertyId);
         return ResponseEntity.ok(propertyResponseDto);
     }
 
@@ -41,18 +44,18 @@ public class PropertyController {
         return ResponseEntity.ok(propertyService.getAllProperties());
     }
 
-    @PutMapping("/{id}")
-    public ResponseEntity<PropertyResponseDto> updatePropertyById(@PathVariable Long id, @Valid @RequestBody PropertyRequestDto propertyRequestDto){
+    @PutMapping("/{propertyId}")
+    public ResponseEntity<PropertyResponseDto> updatePropertyById(@PathVariable Long propertyId, @Valid @RequestBody PropertyRequestDto propertyRequestDto){
         log.info("Received request to update property: {}",propertyRequestDto.getName());
-        PropertyResponseDto propertyResponseDto = propertyService.updatePropertyById(id, propertyRequestDto);
+        PropertyResponseDto propertyResponseDto = propertyService.updatePropertyById(propertyId, propertyRequestDto);
         return ResponseEntity.ok(propertyResponseDto);
 
     }
 
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Boolean> deletePropertyById(@PathVariable Long id){
-        log.info("Received request to delete property with id: {}", id);
-        propertyService.deletePropertyById(id);
+    @DeleteMapping("/{propertyId}")
+    public ResponseEntity<Boolean> deletePropertyById(@PathVariable Long propertyId){
+        log.info("Received request to delete property with id: {}", propertyId);
+        propertyService.deletePropertyById(propertyId);
         return ResponseEntity.noContent().build();
     }
 
@@ -63,12 +66,17 @@ public class PropertyController {
         return ResponseEntity.noContent().build();
     }
 
-    @PatchMapping("/{id}/deactivate")
-    public ResponseEntity<Void> deactivatePropertyById(@PathVariable Long id) {
-        log.info("Received request to deactivate property with id: {}", id);
-        propertyService.deactivateProperty(id);
+    @PatchMapping("/{propertyId}/deactivate")
+    public ResponseEntity<Void> deactivatePropertyById(@PathVariable Long propertyId) {
+        log.info("Received request to deactivate property with id: {}", propertyId);
+        propertyService.deactivateProperty(propertyId);
         return ResponseEntity.noContent().build();
     }
 
+    @GetMapping("/{propertyId}/bookings")
+    public ResponseEntity<List<BookingResponseDto>> getAllBookingsByPropertyId(@PathVariable Long propertyId) {
+        log.info("Received request to fetch bookings with property with id: {}", propertyId);
+        return ResponseEntity.ok(bookingService.getAllBookingsByPropertyId(propertyId));
+    }
 
 }

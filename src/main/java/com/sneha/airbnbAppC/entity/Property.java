@@ -34,6 +34,9 @@ public class Property {
     @Column(nullable = false)
     private Boolean active;
 
+    @ManyToOne(optional = false)
+    private User owner;
+
     @OneToMany(mappedBy = "property", fetch = FetchType.LAZY)
     private List<Room> rooms;
 
