@@ -16,4 +16,4 @@ A Spring Boot backend for a property rental and booking platform, inspired by Ai
 Java · Spring Boot · Spring Data JPA · Hibernate · PostgreSQL · Maven · Lombok · ModelMapper
 
 ## Architecture
-Controller → Service → Repository, with a clean separation between entities and DTOs to keep the API contract independent of the database schema
+Controller → Service → Repository, with a clean separation between entities and DTOs to keep the API contract independent of the database schema.
