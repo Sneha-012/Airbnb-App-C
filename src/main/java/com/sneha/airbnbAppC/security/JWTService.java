@@ -30,7 +30,7 @@ public class JWTService {
     // Kept short (10 min) on purpose — if stolen, the damage window is small.
     public String generateAccessToken(User user){
         return Jwts.builder()
-                .subject(user.getId().toString())       // whose token this is
+                .subject(user.getId().toString())       // whose token this is //to string because it takes string
                 .claim("email", user.getEmail())         // extra info stamped in, avoids extra DB lookups
                 .claim("roles", user.getRoles())
                 .issuedAt(new Date())                    // when it was created
@@ -51,6 +51,7 @@ public class JWTService {
     }
 
     // Verifies a token is genuine (using our secret key) and pulls the user ID out of it.
+    //to verify that token we use this method will give us the id that we are using to create this token
     // Throws automatically if the token was tampered with or wasn't signed by us.
     public Long getUserIdFromToken(String token){
         Claims claims = Jwts.parser()

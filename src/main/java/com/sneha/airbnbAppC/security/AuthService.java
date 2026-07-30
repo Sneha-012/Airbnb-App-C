@@ -44,8 +44,9 @@ public class AuthService {
     }
 
     public String[] login(LoginDto loginDto) {
-        Authentication authentication = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(
-                loginDto.getEmail(), loginDto.getPassword()
+        Authentication authentication = authenticationManager.authenticate(
+                new UsernamePasswordAuthenticationToken(
+                        loginDto.getEmail(), loginDto.getPassword()
         ));
 
         User user = (User) authentication.getPrincipal();
