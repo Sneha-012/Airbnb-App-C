@@ -34,7 +34,7 @@ public class Property {
     @Column(nullable = false)
     private Boolean active;
 
-    @ManyToOne(optional = false)
+    @ManyToOne(optional = true)
     private User owner;
 
     @OneToMany(mappedBy = "property", fetch = FetchType.LAZY)
